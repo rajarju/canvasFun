@@ -1,0 +1,182 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+    <head>
+        <title>Fun With HTML5 Canvas</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <style type="text/css">
+            #canvas1{ border: solid 1px greenyellow;cursor: crosshair;float: left;}
+            .center{}
+            #colors{margin:0;padding:0;float: left;}
+            #colors li{ height: 20px; width: 20px; display: block; cursor: pointer; }
+            #colors li.selected{ height: 18px; width: 18px; display: block; border: solid 1px #eee; }
+            label{float: left;}
+        </style>
+        <!--[if IE]>
+            <script src="excanvas.js"></script>
+        <![endif]-->
+        <script src="jquery.js" type="text/javascript"></script>
+        <script type="text/javascript">
+
+            //To hold the data for each action on the screen
+            var undoHistory = [];
+
+            //Function to save the states in history
+            function saveActions() {
+                var imgData = document.getElementById("canvas1").toDataURL("image/png");
+                undoHistory.push(imgData);
+                $('#undo').removeAttr('disabled');
+            }
+
+            //Actural Undo Function
+            function undoDraw(){
+                if(undoHistory.length > 0){
+                    var undoImg = new Image();
+                    $(undoImg).load(function(){
+                        var context = document.getElementById("canvas1").getContext("2d");
+                        context.drawImage(undoImg, 0,0);
+                    });
+                    undoImg.src = undoHistory.pop();
+                    if(undoHistory.length == 0)
+                        $('#undo').attr('disabled','disabled');
+                }                
+            }
+
+            //Set the canvas defaults
+            //Including a white background
+            function canvasInit(){
+                context = document.getElementById("canvas1").getContext("2d");
+                context.lineCap = "round";
+                //Fill it with white background
+                context.save();
+                context.fillStyle = '#fff';
+                context.fillRect(0, 0, context.canvas.width, context.canvas.height);
+                context.restore();
+            }
+
+
+            $(function(){
+                var canvas, cntxt, top, left, draw, draw = 0;
+                //Get the canvas element
+                //var canvas = $("#canvas1");                
+                canvas = document.getElementById("canvas1");
+                cntxt = canvas.getContext("2d");
+                top = $('#canvas1').offset().top;
+                left = $('#canvas1').offset().left;
+                canvasInit();
+
+                //Drawing Code
+                $('#canvas1').mousedown(function(e){
+                    if(e.button == 0){
+                        draw = 1;
+                        //Start The drawing flow
+                        //Save the state
+                        saveActions();
+                        cntxt.beginPath();
+                        cntxt.moveTo(e.pageX-left, e.pageY-top);
+                    }
+                    else{
+                        draw = 0;
+                    }
+                })
+                .mouseup(function(e){
+                    if(e.button != 0){
+                        draw = 1;
+                    }
+                    else{
+                        draw = 0;
+                        cntxt.lineTo(e.pageX-left+1, e.pageY-top+1);
+                        cntxt.stroke();
+                        cntxt.closePath();
+                    }
+                })
+                .mousemove(function(e){
+                    if(draw == 1){
+                        cntxt.lineTo(e.pageX-left+1, e.pageY-top+1);
+                        cntxt.stroke();
+                    }
+                });
+
+                //Extra Links Code
+                $('#export').click(function(e){
+                    e.preventDefault();
+                    window.open(canvas.toDataURL(), 'Canvas Export','height=400,width=400');
+                    //console.log(canvas.toDataURL());
+                });
+                $('#clear').click(function(e){
+                    e.preventDefault();
+                    canvas.width = canvas.width;
+                    canvas.height = canvas.height;
+                    canvasInit();
+                    $('#colors li:first').click();
+                    $('#brush_size').change();
+                    undoHistory = [];
+                });
+                $('#brush_size').change(function(e){
+                    cntxt.lineWidth = $(this).val();
+                });            
+                $('#colors li').click(function(e){
+                    e.preventDefault();
+                    $('#colors li').removeClass('selected');
+                    $(this).addClass('selected');
+                    cntxt.strokeStyle = $(this).css('background-color');
+                });
+
+                //Undo Binding
+                $('#undo').click(function(e){
+                    e.preventDefault();
+                    undoDraw()
+                });
+
+                //Init the brush and color
+                $('#colors li:first').click();
+                $('#brush_size').change();
+
+            })
+        </script>
+    </head>
+    <body>
+
+        <div class="center">
+            <h1>Fun With HTML5 canvas</h1>
+            <canvas id="canvas1" width="400" height="400" ></canvas>
+            <br/>
+            <ul id="colors">
+                <li style="background-color:black;"> </li>
+                <li style="background-color:red;"> </li>
+                <li style="background-color:green;"> </li>
+                <li style="background-color:orange;"> </li>
+                <li style="background-color:brown;"> </li>
+                <li style="background-color:#d2232a;"> </li>
+                <li style="background-color:#fcb017;"> </li>
+                <li style="background-color:#fff460;"> </li>
+                <li style="background-color:#9ecc3b;"> </li>
+                <li style="background-color:#fcb017;"> </li>
+                <li style="background-color:#fff460;"> </li>
+                <li style="background-color:#F43059;"> </li>
+                <li style="background-color:#82B82C;"> </li>
+                <li style="background-color:#0099FF;"> </li>
+                <li style="background-color:#ff00ff;"> </li>
+            </ul>
+            <br style="clear:both;"/>
+            <label for="brush">Brush Size:</label><input name="brush" id="brush_size" type="range" value="5"  min="0" max="100" />
+            <br style="clear:both;"/>
+            <button id="undo" href="#" disabled="disabled">Undo</button>
+            <button id="clear" href="#">Reset</button> 
+            <button id="export" href="#">Export as Image</button> 
+            <button href="http://athousandnodes.com" target="_blank">a thousand nodes...</button>
+        </div>
+<script type="text/javascript">
+
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-10965684-4']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+
+</script>
+    </body>
+</html>
